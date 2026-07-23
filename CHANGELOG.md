@@ -9,3 +9,4 @@
 - Unit, adversarial, and integration tests for calibration-set generation.
 - GitHub Actions CI workflow for unit and adversarial tests.
 - `observable/compute.py`: quantization-robust observable (`StepObservable`) with `entropy_ratio`, `margin_ratio`, `combined`. Scale-invariant to uniform additive logprob shifts.
+- `stats/null_model.py`: null-distribution fitting (`NullModel`, `fit_null`, `null_loglik_ratio`) with candidate distribution selection via KS-test and `combined_values_from_calibration_set` helper.
