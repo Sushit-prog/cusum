@@ -135,10 +135,8 @@ class TwoSidedCusumState:
 @dataclass
 class MonitorConfig:
     null_model_path: str
-    threshold: float             # shared threshold; consider whether the two
-                                  # directions need independently-calibrated
-                                  # thresholds in M6 — false-alarm rate may not
-                                  # be symmetric between the two ECusum instances
+    threshold_positive: float  # independently calibrated for positive direction (entropy-spike)
+    threshold_negative: float  # independently calibrated for negative direction (repetition-collapse)
     degrade_to_logprob_only: bool   # True if hidden states aren't exposed by the backend
     alert_webhook: str | None
 

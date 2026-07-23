@@ -24,6 +24,7 @@ class CusumAlert:
     triggered_at_step: int
     threshold: float
     trace: list[float]
+    direction: str  # "positive" (entropy-spike) or "negative" (repetition-collapse)
 
 
 class ECusum:
@@ -39,7 +40,8 @@ class ECusum:
         self.alt_shift = alt_shift
 
     def update(
-        self, state: CusumState, observable: float, request_id: str = ""
+        self, state: CusumState, observable: float, request_id: str = "",
+        direction: str = "",
     ) -> tuple[CusumState, CusumAlert | None]:
         """Process one observable value and return updated state + optional alert.
 
@@ -62,6 +64,7 @@ class ECusum:
                 triggered_at_step=new_state.step_count,
                 threshold=self.threshold,
                 trace=new_state.trace,
+                direction=direction,
             )
 
         return new_state, alert
