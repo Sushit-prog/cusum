@@ -12,3 +12,4 @@
 - `stats/null_model.py`: null-distribution fitting (`NullModel`, `fit_null`, `null_loglik_ratio`) with candidate distribution selection via KS-test and `combined_values_from_calibration_set` helper.
 - `stats/cusum.py`: e-CUSUM engine (`CusumState`, `CusumAlert`, `ECusum`) with reset-at-zero recursion.
 - `calibration/threshold.py`: conformal-style threshold calibration (`calibrate_threshold`) with bootstrap simulation and held-out validation.
+  - **Known limitation**: bootstrap resamples individual observable values i.i.d. with replacement, discarding real token-to-token correlation in actual generation. May over/understate the real-world false-alarm rate versus true autocorrelated sequences. Should be revisited once M5's drift-injection framework provides real sequences to validate the bootstrap assumption against.

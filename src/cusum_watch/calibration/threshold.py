@@ -54,6 +54,8 @@ def calibrate_threshold(
             f"target_false_alarm_rate must be in (0, 1), got {target_false_alarm_rate}"
         )
 
+    # 100 minimum: bootstrapping num_simulations sequences of sequence_length
+    # needs more pool depth than M3's single-distribution fit (which needs 30).
     if len(null_observables) < 100:
         raise ValueError(
             f"Need at least 100 null observables for stable calibration, "
