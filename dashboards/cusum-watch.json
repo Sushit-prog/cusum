@@ -1,0 +1,144 @@
+{
+    "annotations":  {
+                        "list":  [
+
+                                 ]
+                    },
+    "time":  {
+                 "to":  "now",
+                 "from":  "now-1h"
+             },
+    "templating":  {
+                       "list":  [
+                                    {
+                                        "query":  "prometheus",
+                                        "name":  "datasource",
+                                        "type":  "datasource"
+                                    },
+                                    {
+                                        "query":  "label_values(cusum_watch_alarms_total,model)",
+                                        "multi":  true,
+                                        "includeAll":  true,
+                                        "name":  "model",
+                                        "type":  "query"
+                                    }
+                                ]
+                   },
+    "schemaVersion":  39,
+    "uid":  "cusum-watch",
+    "tags":  [
+                 "cusum"
+             ],
+    "editable":  true,
+    "graphTooltip":  1,
+    "refresh":  "30s",
+    "title":  "cusum-watch Drift Monitor",
+    "panels":  [
+                   {
+                       "gridPos":  {
+                                       "y":  0,
+                                       "w":  12,
+                                       "x":  0,
+                                       "h":  8
+                                   },
+                       "title":  "Alarm Rate by Direction",
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{model}} / {{direction}}",
+                                           "expr":  "rate(cusum_watch_alarms_total{model=~\"$model\"}[5m])"
+                                       }
+                                   ],
+                       "type":  "timeseries",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "${datasource}"
+                                      }
+                   },
+                   {
+                       "gridPos":  {
+                                       "y":  0,
+                                       "w":  12,
+                                       "x":  12,
+                                       "h":  8
+                                   },
+                       "title":  "Time to Detect",
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "p50",
+                                           "expr":  "histogram_quantile(0.50,rate(cusum_watch_mean_time_to_detect_tokens_bucket{model=~\"$model\"}[5m]))"
+                                       },
+                                       {
+                                           "legendFormat":  "p95",
+                                           "expr":  "histogram_quantile(0.95,rate(cusum_watch_mean_time_to_detect_tokens_bucket{model=~\"$model\"}[5m]))"
+                                       }
+                                   ],
+                       "type":  "timeseries",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "${datasource}"
+                                      }
+                   },
+                   {
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "thresholds":  {
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "value":  null,
+                                                                                                 "color":  "green"
+                                                                                             },
+                                                                                             {
+                                                                                                 "value":  0.2,
+                                                                                                 "color":  "yellow"
+                                                                                             },
+                                                                                             {
+                                                                                                 "value":  0.4,
+                                                                                                 "color":  "red"
+                                                                                             }
+                                                                                         ],
+                                                                               "mode":  "absolute"
+                                                                           }
+                                                        }
+                                       },
+                       "gridPos":  {
+                                       "y":  8,
+                                       "w":  12,
+                                       "x":  0,
+                                       "h":  8
+                                   },
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{model}}",
+                                           "expr":  "cusum_watch_calibration_drift{model=~\"$model\"}"
+                                       }
+                                   ],
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "${datasource}"
+                                      },
+                       "type":  "timeseries",
+                       "title":  "Calibration Drift"
+                   },
+                   {
+                       "gridPos":  {
+                                       "y":  8,
+                                       "w":  6,
+                                       "x":  12,
+                                       "h":  4
+                                   },
+                       "title":  "Total Alarms",
+                       "targets":  [
+                                       {
+                                           "legendFormat":  "{{model}} / {{direction}}",
+                                           "expr":  "cusum_watch_alarms_total{model=~\"$model\"}"
+                                       }
+                                   ],
+                       "type":  "stat",
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "${datasource}"
+                                      }
+                   }
+               ],
+    "version":  1
+}

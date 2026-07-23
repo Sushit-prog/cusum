@@ -122,3 +122,25 @@ class MetricsRegistry:
                 key = (family.name, frozenset(sample.labels.items()))
                 result[key] = sample.value
         return result
+
+
+# ---------------------------------------------------------------------------
+# Standalone server (run with: python -m cusum_watch.metrics.server)
+# ---------------------------------------------------------------------------
+
+def create_app(registry=None):
+    from fastapi import FastAPI, Response
+    app = FastAPI(title='cusum-watch metrics')
+    reg = registry or MetricsRegistry()
+
+    @app.get('/metrics')
+    def metrics():
+        return Response(content=reg.generate_metrics(), media_type=CONTENT_TYPE_LATEST)
+
+    return app, reg
+
+
+if __name__ == '__main__':
+    import uvicorn
+    app, _ = create_app()
+    uvicorn.run(app, host='0.0.0.0', port=9090)
