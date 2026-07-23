@@ -1,0 +1,134 @@
+{
+  "cusum_watch.calibration.generate.CalibrationSample": {
+    "signature": "class CalibrationSample(prompt, tokens, logprobs, topk_logprobs, hidden_state_deltas)",
+    "fields": [
+      "hidden_state_deltas",
+      "logprobs",
+      "prompt",
+      "tokens",
+      "topk_logprobs"
+    ]
+  },
+  "cusum_watch.calibration.generate.generate_calibration_set": {
+    "signature": "def generate_calibration_set(model_path: 'str', prompts: 'list[str]', k: 'int' = 10, max_new_tokens: 'int' = 256) -> 'list[CalibrationSample]'",
+    "fields": []
+  },
+  "cusum_watch.calibration.generate.save_calibration_set": {
+    "signature": "def save_calibration_set(samples: 'list[CalibrationSample]', path: 'str') -> 'None'",
+    "fields": []
+  },
+  "cusum_watch.calibration.generate.load_calibration_set": {
+    "signature": "def load_calibration_set(path: 'str') -> 'list[CalibrationSample]'",
+    "fields": []
+  },
+  "cusum_watch.calibration.generate.combined_values_from_calibration_set": {
+    "error": "module 'cusum_watch.calibration.generate' has no attribute 'combined_values_from_calibration_set'",
+    "signature": null,
+    "fields": []
+  },
+  "cusum_watch.observable.compute.StepObservable": {
+    "signature": "class StepObservable(entropy_ratio, margin_ratio, combined)",
+    "fields": [
+      "combined",
+      "entropy_ratio",
+      "margin_ratio"
+    ]
+  },
+  "cusum_watch.observable.compute.ObservableFn": {
+    "signature": "class ObservableFn(args, kwargs)",
+    "fields": []
+  },
+  "cusum_watch.observable.compute.default_observable": {
+    "signature": "def default_observable(topk_logprobs: 'list[float]', hidden_state_deltas: 'list[float] | None' = None) -> 'StepObservable'",
+    "fields": []
+  },
+  "cusum_watch.stats.null_model.NullModel": {
+    "signature": "class NullModel(distribution, params, fit_diagnostics)",
+    "fields": [
+      "distribution",
+      "fit_diagnostics",
+      "params"
+    ]
+  },
+  "cusum_watch.stats.null_model.fit_null": {
+    "signature": "def fit_null(observables: 'list[float]') -> 'NullModel'",
+    "fields": []
+  },
+  "cusum_watch.stats.null_model.null_loglik_ratio": {
+    "signature": "def null_loglik_ratio(x: 'float', null: 'NullModel', alt_shift: 'float') -> 'float'",
+    "fields": []
+  },
+  "cusum_watch.stats.cusum.CusumState": {
+    "signature": "class CusumState(cumulative, step_count, trace)",
+    "fields": [
+      "cumulative",
+      "step_count",
+      "trace"
+    ]
+  },
+  "cusum_watch.stats.cusum.CusumAlert": {
+    "signature": "class CusumAlert(request_id, triggered_at_step, threshold, trace, direction)",
+    "fields": [
+      "direction",
+      "request_id",
+      "threshold",
+      "trace",
+      "triggered_at_step"
+    ]
+  },
+  "cusum_watch.stats.cusum.ECusum": {
+    "signature": "class ECusum(null, threshold, alt_shift)",
+    "fields": []
+  },
+  "cusum_watch.calibration.threshold.calibrate_threshold": {
+    "signature": "def calibrate_threshold(null_observables: 'list[float]', target_false_alarm_rate: 'float', null_model: 'NullModel', alt_shift: 'float' = 0.1, num_simulations: 'int' = 500, sequence_length: 'int' = 100, rng_seed: 'int' = 42) -> 'tuple[float, dict]'",
+    "fields": []
+  },
+  "cusum_watch.proxy.litellm_hook.TwoSidedCusumState": {
+    "signature": "class TwoSidedCusumState(positive, negative)",
+    "fields": [
+      "negative",
+      "positive"
+    ]
+  },
+  "cusum_watch.proxy.litellm_hook.MonitorConfig": {
+    "signature": "class MonitorConfig(null_model_path, threshold_positive, threshold_negative, degrade_to_logprob_only, alert_webhook, alt_shift)",
+    "fields": [
+      "alert_webhook",
+      "alt_shift",
+      "degrade_to_logprob_only",
+      "null_model_path",
+      "threshold_negative",
+      "threshold_positive"
+    ]
+  },
+  "cusum_watch.proxy.litellm_hook.CusumWatchAlert": {
+    "signature": "class CusumWatchAlert(request_id, triggered_at_step, threshold, trace, direction)",
+    "fields": [
+      "direction",
+      "request_id",
+      "threshold",
+      "trace",
+      "triggered_at_step"
+    ]
+  },
+  "cusum_watch.proxy.litellm_hook.CusumWatchLogger": {
+    "signature": "class CusumWatchLogger(config, null_model, observable_fn, metrics)",
+    "fields": []
+  },
+  "cusum_watch.metrics.server.MetricsConfig": {
+    "signature": "class MetricsConfig(model, calibration_window_size)",
+    "fields": [
+      "calibration_window_size",
+      "model"
+    ]
+  },
+  "cusum_watch.metrics.server.MetricsRegistry": {
+    "signature": "class MetricsRegistry(config)",
+    "fields": []
+  },
+  "cusum_watch.metrics.server.create_app": {
+    "signature": "def create_app(registry=None)",
+    "fields": []
+  }
+}

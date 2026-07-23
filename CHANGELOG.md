@@ -23,3 +23,12 @@
 - CI: added scheduled slow tests job (weekly/manual), clean-install smoke test, verified missing-dep detection works.
 - tests/test_adversarial_validation.py: adversarial validation suite. Part A: sequential data FAR (positive=0.230, negative=0.130) vs bootstrap prediction (positive=0.090, negative=0.140) — positive direction shows 2.6x divergence, negative is 0.9x. Part B: repetitive-from-start, short generations, bimodal fit, KS p-value design finding (computed but ignored downstream), 50-concurrent-request isolation. Part C: OWASP LLM Top 10 taxonomy mapping.
 - calibrate_threshold: added KS p-value guard (threshold 0.05) — rejects null models with statistically implausible fits. Bimodal calibration set now raises ValueError instead of silently proceeding.
+## 0.2.0
+
+### Changed
+- INTERFACES.md reconciled against actual code (§2 hidden_state_deltas param, §4 CusumAlert.direction + request_id/direction on ECusum.update, §5 calibrate_threshold extra params + ks_pvalue guard, §6 CusumWatchLogger 3-arg init + MonitorConfig.alt_shift + CusumWatchAlert.direction, §7 MetricsRegistry + create_app).
+- calibrate_threshold: rejects null models with KS p-value < 0.05.
+
+### Added
+- scripts/check_api_compat.py: public API compatibility checker. Introspects package signatures, compares against api_baseline.json, exits 1 on breaking changes.
+- api_baseline.json: checked-in baseline for API compat checking.
