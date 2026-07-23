@@ -20,3 +20,4 @@
 - dashboards/cusum-watch.json: Grafana dashboard with alarm rate, time-to-detect histogram, calibration drift gauge, and per-model breakdown. Calibration drift warning threshold at 0.2 (KS-stat) based on M8 test numbers.
 - docs/observability.md and docs/DEPLOYMENT.md: metrics documentation and deployment walkthrough. Metrics server now has __main__ block for standalone execution (python -m cusum_watch.metrics.server).
 - cli/main.py: cusum-watch CLI with calibrate, inspect, serve-metrics subcommands. calibrate runs full pipeline (M1-M4) with independent positive/negative threshold calibration. inspect displays calibration reports. serve-metrics wraps M9 server entry point.
+- CI: added scheduled slow tests job (weekly/manual), clean-install smoke test, verified missing-dep detection works.
