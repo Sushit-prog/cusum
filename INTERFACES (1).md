@@ -143,6 +143,24 @@ computed from fewer inputs). This must be a config flag, not a silent fallback.
 Subcommands: `calibrate` (runs generate → fit_null → calibrate_threshold end to
 end), `inspect` (dump a NullModel/threshold's calibration_report), `serve-metrics`.
 
+## 9. `drift_injection/inject.py` — synthetic drift-injection (added in M5, change-control)
+
+```python
+@dataclass
+class DriftInjectionResult:
+    original_sample: CalibrationSample
+    injected_sample: CalibrationSample
+    injection_step: int
+    injection_kind: str
+
+class InjectionFn(Protocol):
+    def __call__(self, sample: CalibrationSample, injection_step: int) -> CalibrationSample: ...
+
+def inject_repetition_collapse(sample: CalibrationSample, injection_step: int) -> CalibrationSample: ...
+def inject_entropy_spike(sample: CalibrationSample, injection_step: int, magnitude: float = 3.0) -> CalibrationSample: ...
+def inject_degenerate_flattening(sample: CalibrationSample, injection_step: int, magnitude: float = 3.0) -> CalibrationSample: ...
+```
+
 ## Versioning
 
 Public API = everything in this file. See VERSIONING_POLICY.md.
