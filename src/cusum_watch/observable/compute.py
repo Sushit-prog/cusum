@@ -20,10 +20,12 @@ class StepObservable:
 
 
 class ObservableFn(Protocol):
-    def __call__(self, topk_logprobs: list[float]) -> StepObservable: ...
+    def __call__(self, topk_logprobs: list[float],
+                 hidden_state_deltas: list[float] | None = None) -> StepObservable: ...
 
 
-def default_observable(topk_logprobs: list[float]) -> StepObservable:
+def default_observable(topk_logprobs: list[float],
+                       hidden_state_deltas: list[float] | None = None) -> StepObservable:
     """Compute the quantization-robust observable from top-k logprobs.
 
     Parameters
@@ -31,6 +33,10 @@ def default_observable(topk_logprobs: list[float]) -> StepObservable:
     topk_logprobs:
         Top-k log-probabilities for a single token step, sorted descending.
         Values must be finite (no NaN or Inf).
+    hidden_state_deltas:
+        Accepted for interface compatibility but ignored in this logprob-only
+        implementation. A future backend that exposes hidden states would
+        provide a different ObservableFn implementation.
 
     Returns
     -------

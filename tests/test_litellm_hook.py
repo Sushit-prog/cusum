@@ -19,7 +19,7 @@ def _make_config(**kwargs) -> MonitorConfig:
         "null_model_path": "dummy.json",
         "threshold_positive": 5.0,
         "threshold_negative": 5.0,
-        "degrade_to_logprob_only": False,
+        "degrade_to_logprob_only": True,  # only supported mode (no hidden-state backend exists)
         "alert_webhook": None,
         "alt_shift": 0.05,
     }
@@ -209,21 +209,22 @@ def test_normal_sequence_no_alert():
 # ---------------------------------------------------------------------------
 
 
-def test_degrade_to_logprob_only():
-    """degrade_to_logprob_only=True still produces valid two-sided computation.
+def test_degrade_flag_is_read():
+    """Verify degrade_to_logprob_only flag is stored and selects default_observable.
 
-    This exercises the flag's code path, not just the default path.
-    Since hidden_state_deltas is always None (M1), this flag doesn't change
-    the observable computation — but we verify the flag is read and the
-    pipeline still works correctly.
+    This test verifies the flag exists and is stored. It does NOT test a
+    distinct code path because no alternative ObservableFn is injected —
+    the flag selects the same default_observable that would be used anyway.
+    The real pluggable-observable test is test_observable_fn_injection.
     """
     null_model = _make_null_model()
     config = _make_config(degrade_to_logprob_only=True, threshold_positive=50.0, threshold_negative=50.0)
     logger = CusumWatchLogger(config, null_model)
 
     assert logger.config.degrade_to_logprob_only is True
+    assert logger.observable_fn is not None
 
-    # Pipeline should still work
+    # Pipeline should still work via the selected observable_fn
     normal = _make_in_distribution_topk()
     from cusum_watch.observable.compute import default_observable
 
@@ -236,8 +237,51 @@ def test_degrade_to_logprob_only():
         assert alert_pos is None
         assert alert_neg is None
 
-    # Verify the flag is actually set (not vacuous)
-    assert logger.config.degrade_to_logprob_only is True
+
+def test_observable_fn_injection():
+    """Inject a custom ObservableFn that produces different values than default.
+
+    This is the real test of pluggable observables: CusumWatchLogger uses
+    the injected function, not default_observable, proving the interface
+    works for future backend swaps without touching stats/ or proxy/.
+    """
+    from cusum_watch.observable.compute import StepObservable
+
+    def fake_observable(topk_logprobs, hidden_state_deltas=None):
+        """Pretends to use hidden states — returns a constant distinct from default."""
+        return StepObservable(
+            entropy_ratio=0.99,
+            margin_ratio=0.01,
+            combined=0.99,
+        )
+
+    null_model = _make_null_model()
+    config = _make_config(threshold_positive=50.0, threshold_negative=50.0)
+    logger = CusumWatchLogger(config, null_model, observable_fn=fake_observable)
+
+    # The injected function is used, not default_observable
+    assert logger.observable_fn is fake_observable
+
+    # Run a sequence — every step should produce combined=0.99
+    normal = _make_in_distribution_topk()
+    state_pos = CusumState()
+    for step_topk in normal:
+        obs = logger.observable_fn(step_topk)
+        assert obs.combined == 0.99, "injected observable_fn should be used"
+
+    # Verify this differs from what default_observable would produce
+    from cusum_watch.observable.compute import default_observable
+    default_obs = default_observable(normal[0])
+    assert default_obs.combined != 0.99, "default_observable should differ from fake"
+
+
+def test_degrade_false_without_observable_fn_raises():
+    """degrade_to_logprob_only=False without injected ObservableFn raises NotImplementedError."""
+    null_model = _make_null_model()
+    config = _make_config(degrade_to_logprob_only=False)
+
+    with pytest.raises(NotImplementedError, match="ObservableFn injection"):
+        CusumWatchLogger(config, null_model)
 
 
 # ---------------------------------------------------------------------------

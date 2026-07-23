@@ -14,7 +14,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
-from cusum_watch.observable.compute import default_observable
+from cusum_watch.observable.compute import ObservableFn, default_observable
 from cusum_watch.stats.cusum import CusumState, ECusum
 from cusum_watch.stats.null_model import NullModel
 
@@ -55,9 +55,25 @@ class CusumWatchLogger:
     State is cleaned up in async_log_success_event.
     """
 
-    def __init__(self, config: MonitorConfig, null_model: NullModel):
+    def __init__(self, config: MonitorConfig, null_model: NullModel,
+                 observable_fn: ObservableFn | None = None):
         self.config = config
         self.null_model = null_model
+
+        # Select observable implementation
+        if observable_fn is not None:
+            self.observable_fn = observable_fn
+        elif config.degrade_to_logprob_only:
+            self.observable_fn = default_observable
+        else:
+            raise NotImplementedError(
+                "degrade_to_logprob_only=False requires an alternative "
+                "ObservableFn injection. No hidden-state-aware implementation "
+                "is available because no CPU-only backend exposes hidden states. "
+                "Pass observable_fn= to CusumWatchLogger, or set "
+                "degrade_to_logprob_only=True."
+            )
+
         self.cusum_positive = ECusum(
             null=null_model,
             threshold=config.threshold_positive,
@@ -87,7 +103,7 @@ class CusumWatchLogger:
         alerts: list[CusumWatchAlert] = []
 
         for topk in topk_logprobs_list:
-            obs = default_observable(topk)
+            obs = self.observable_fn(topk)
 
             # Positive direction (entropy increase)
             state.positive, alert_pos = self.cusum_positive.update(
