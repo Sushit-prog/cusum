@@ -35,3 +35,16 @@ Import dashboards/cusum-watch.json into Grafana via Dashboards > Import.
 
 - In-memory only: metrics reset on proxy restart. Not suitable for historical analysis.
 - Rolling window: calibration_drift uses last N combined values (default 1000).
+
+
+## Failure Mode Taxonomy
+
+Mapping of cusum-watch failure modes to OWASP LLM Top 10 (2025) categories:
+
+| cusum-watch failure mode | OWASP LLM Top 10 category | Notes |
+|---|---|---|
+| Repetition collapse | LLM07: Insecure Plugin/Tool Output | Model output degrades to repetitive degenerate tokens |
+| Entropy spike | LLM07: Insecure Plugin/Tool Output | Model loses coherence, output becomes random/uniform |
+| Calibration drift | LLM09: Overreliance | Drift between calibration and production data distributions |
+
+These mappings are informational — cusum-watch detects the failure modes but does not prevent them. Detection enables alerting and rollback.
