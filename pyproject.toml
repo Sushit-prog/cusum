@@ -16,6 +16,7 @@ dependencies = [
     "fastapi>=0.100",
     "uvicorn>=0.20",
     "prometheus_client>=0.17",
+    "click>=8.0",
 ]
 
 [project.optional-dependencies]
@@ -23,6 +24,9 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
+
+[project.scripts]
+cusum-watch = "cusum_watch.cli.main:cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cusum_watch"]
