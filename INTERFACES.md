@@ -109,20 +109,54 @@ the sample size it was computed on — this is the artifact that justifies the
 
 ## 6. `proxy/litellm_hook.py` — the deployed integration
 
+**Two-sided monitoring (added after M5's finding):** M5's drift-injection
+tests showed that different failure modes shift the observable in opposite
+directions — repetition collapse (excess certainty) decreases `combined`,
+while entropy spike (loss of coherence) increases it. A single one-sided
+`ECusum` only catches one direction. The deployed hook therefore maintains
+**two** `ECusum` instances per request — one with a positive `alt_shift`
+(catches entropy-spike-like drift) and one with a negative `alt_shift`
+(catches repetition-collapse-like drift) — both fed the same per-step
+`combined` observable, either one able to raise an alert independently.
+
 ```python
 class CusumWatchLogger(CustomLogger):  # litellm.integrations.custom_logger.CustomLogger
     def __init__(self, config: MonitorConfig): ...
     async def async_log_pre_api_call(self, model, messages, kwargs): ...
     async def async_log_success_event(self, kwargs, response_obj, start_time, end_time): ...
-    # per-token streaming hook maintains one CusumState per request_id
+    # per-token streaming hook maintains a pair of CusumState (positive-shift,
+    # negative-shift) per request_id — see TwoSidedCusumState below
+
+@dataclass
+class TwoSidedCusumState:
+    positive: CusumState   # detects entropy-spike-like drift (alt_shift > 0)
+    negative: CusumState   # detects repetition-collapse-like drift (alt_shift < 0)
 
 @dataclass
 class MonitorConfig:
     null_model_path: str
-    threshold: float
+    threshold: float             # shared threshold; consider whether the two
+                                  # directions need independently-calibrated
+                                  # thresholds in M6 — false-alarm rate may not
+                                  # be symmetric between the two ECusum instances
     degrade_to_logprob_only: bool   # True if hidden states aren't exposed by the backend
     alert_webhook: str | None
+
+@dataclass
+class CusumAlert:
+    request_id: str
+    triggered_at_step: int
+    threshold: float
+    trace: list[float]
+    direction: str   # "positive" (entropy-spike-like) or "negative" (repetition-collapse-like)
 ```
+
+Open question for M6 to resolve, not assume: does a single shared threshold
+(calibrated once, per M4) hold for both directions, or does the asymmetry
+found in M5 mean the positive- and negative-shift `ECusum` instances need
+independently calibrated thresholds via two separate `calibrate_threshold`
+calls? Flag this explicitly in the M6 milestone summary rather than picking
+one silently.
 
 Degradation rule (M7): if `hidden_state_deltas` is unavailable from the backend,
 `observable/compute.py`'s `default_observable` falls back to a logprob-only-derived
