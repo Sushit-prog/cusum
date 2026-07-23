@@ -18,6 +18,9 @@ from cusum_watch.observable.compute import ObservableFn, default_observable
 from cusum_watch.stats.cusum import CusumState, ECusum
 from cusum_watch.stats.null_model import NullModel
 
+# MetricsRegistry is imported lazily to avoid circular imports
+MetricsRegistry = None  # type: ignore[assignment,misc]
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,9 +59,11 @@ class CusumWatchLogger:
     """
 
     def __init__(self, config: MonitorConfig, null_model: NullModel,
-                 observable_fn: ObservableFn | None = None):
+                 observable_fn: ObservableFn | None = None,
+                 metrics: object | None = None):
         self.config = config
         self.null_model = null_model
+        self.metrics = metrics  # MetricsRegistry instance, or None
 
         # Select observable implementation
         if observable_fn is not None:
@@ -105,6 +110,10 @@ class CusumWatchLogger:
         for topk in topk_logprobs_list:
             obs = self.observable_fn(topk)
 
+            # Record combined value for drift monitoring
+            if self.metrics is not None:
+                self.metrics.record_combined(obs.combined)
+
             # Positive direction (entropy increase)
             state.positive, alert_pos = self.cusum_positive.update(
                 state.positive, obs.combined, request_id, direction="positive"
@@ -138,7 +147,7 @@ class CusumWatchLogger:
         return alerts
 
     def _dispatch_alerts(self, alerts: list[CusumWatchAlert]) -> None:
-        """Dispatch alerts: log structurally and POST to webhook if configured."""
+        """Dispatch alerts: log structurally, record metrics, POST to webhook."""
         for alert in alerts:
             logger.warning(
                 "CUSUM drift alert: request_id=%s step=%d direction=%s threshold=%.4f",
@@ -147,6 +156,8 @@ class CusumWatchLogger:
                 alert.direction,
                 alert.threshold,
             )
+            if self.metrics is not None:
+                self.metrics.record_alert(alert.direction, alert.triggered_at_step)
             if self.config.alert_webhook:
                 try:
                     import urllib.request
