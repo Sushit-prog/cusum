@@ -28,4 +28,4 @@ jobs:
 
       - name: Run unit and adversarial tests
         run: |
-          pytest tests/test_calibration_unit.py tests/test_calibration_adversarial.py -v
+          pytest tests/test_calibration_unit.py tests/test_calibration_adversarial.py tests/test_observable.py -v
