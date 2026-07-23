@@ -174,7 +174,7 @@ def test_extremely_short_generation():
 
 
 def test_bimodal_calibration_set_fit_null():
-    """Bimodal calibration set: fit_null picks beta or norm, reports low KS p-value."""
+    """Bimodal calibration set: fit_null produces low KS p-value, calibrate_threshold rejects it."""
     # Bimodal: mix of two clusters
     rng = np.random.default_rng(42)
     cluster1 = rng.normal(0.2, 0.05, 50).tolist()
@@ -189,22 +189,23 @@ def test_bimodal_calibration_set_fit_null():
         f"Bimodal data should produce low KS p-value, got {ks_pval:.4f}"
     )
 
+    # calibrate_threshold should now reject this poor fit
+    with pytest.raises(ValueError, match="KS p-value.*below 0.05"):
+        calibrate_threshold(bimodal, 0.05, null_model, alt_shift=0.002)
 
-def test_ks_pvalue_ignored_downstream():
-    """Verify that fit_diagnostics KS p-value is not used by downstream code.
 
-    This is a design finding: fit_null computes KS p-value but nothing
-    downstream reads it. This means a poor fit is silently accepted.
-    """
-    # Check that calibrate_threshold doesn't use fit_diagnostics
-    import inspect
-    from cusum_watch.calibration.threshold import calibrate_threshold
+def test_ks_pvalue_now_checked_by_calibrate_threshold():
+    """calibrate_threshold checks KS p-value and rejects poor fits."""
+    # Good fit should pass
+    rng = np.random.default_rng(42)
+    good_data = rng.normal(0.5, 0.1, 200).tolist()
+    null_model = fit_null(good_data)
+    ks_pval = null_model.fit_diagnostics.get("ks_pvalue", 0.0)
+    assert ks_pval >= 0.05, f"good fit should have p-value >= 0.05, got {ks_pval}"
 
-    source = inspect.getsource(calibrate_threshold)
-    assert "ks_pvalue" not in source, (
-        "calibrate_threshold should not use ks_pvalue (design finding: "
-        "poor fits are silently accepted)"
-    )
+    # Should not raise
+    calibrate_threshold(good_data, 0.05, null_model, alt_shift=0.002,
+                        num_simulations=50, sequence_length=50)
 
 
 def test_concurrent_request_isolation():

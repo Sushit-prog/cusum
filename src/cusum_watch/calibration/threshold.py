@@ -62,6 +62,18 @@ def calibrate_threshold(
             f"got {len(null_observables)}"
         )
 
+    # Reject null models with poor KS fit. Threshold of 0.05 is the standard
+    # significance cutoff — a p-value below this means the fitted distribution
+    # is statistically implausible given the data.
+    ks_pvalue = null_model.fit_diagnostics.get("ks_pvalue")
+    if ks_pvalue is not None and ks_pvalue < 0.05:
+        raise ValueError(
+            f"Null model KS p-value {ks_pvalue:.4f} is below 0.05 threshold — "
+            f"the fitted distribution ({null_model.distribution}) is a poor fit "
+            f"for the data. Re-run fit_null on a different candidate or check "
+            f"the calibration data distribution."
+        )
+
     rng = np.random.default_rng(rng_seed)
     arr = np.array(null_observables)
 
