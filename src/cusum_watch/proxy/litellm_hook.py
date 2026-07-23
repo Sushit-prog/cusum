@@ -34,7 +34,7 @@ class MonitorConfig:
     threshold_negative: float  # independently calibrated for negative direction
     degrade_to_logprob_only: bool = False
     alert_webhook: str | None = None
-    alt_shift: float = 0.05  # magnitude of shift for both directions
+    alt_shift: float = 0.02  # magnitude of shift for both directions (must be <= 0.2x null std for calibration to work)
 
 
 @dataclass
