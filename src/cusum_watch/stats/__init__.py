@@ -1,3 +1,4 @@
+from cusum_watch.stats.cusum import CusumAlert, CusumState, ECusum
 from cusum_watch.stats.null_model import (
     NullModel,
     combined_values_from_calibration_set,
@@ -6,6 +7,9 @@ from cusum_watch.stats.null_model import (
 )
 
 __all__ = [
+    "CusumAlert",
+    "CusumState",
+    "ECusum",
     "NullModel",
     "combined_values_from_calibration_set",
     "fit_null",
