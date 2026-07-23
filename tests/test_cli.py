@@ -60,12 +60,14 @@ def test_calibrate_end_to_end_no_model(tmp_path):
         fit_diagnostics={"ks_pvalue": 0.5, "ks_statistic": 0.05, "sample_size": len(combined)},
     )
 
-    # Calibrate both directions
+    # Calibrate both directions (reduced sim counts - tests pipeline wiring)
     thresh_pos, report_pos = calibrate_threshold(
         combined, 0.05, null_model, alt_shift=0.002,
+        num_simulations=20, sequence_length=20,
     )
     thresh_neg, report_neg = calibrate_threshold(
         combined, 0.05, null_model, alt_shift=-0.002,
+        num_simulations=20, sequence_length=20,
     )
     assert thresh_pos >= 0
     assert thresh_neg >= 0

@@ -26,7 +26,7 @@ def test_max_new_tokens_zero_handled_cleanly():
         ]
     }
 
-    with patch("cusum_watch.calibration.generate.Llama", return_value=mock_llm):
+    with patch("llama_cpp.Llama", return_value=mock_llm):
         result = generate_calibration_set(
             model_path="dummy.gguf",
             prompts=["Hello"],
@@ -57,7 +57,7 @@ def test_single_token_generation():
         ]
     }
 
-    with patch("cusum_watch.calibration.generate.Llama", return_value=mock_llm):
+    with patch("llama_cpp.Llama", return_value=mock_llm):
         result = generate_calibration_set(
             model_path="dummy.gguf",
             prompts=["Greet"],
@@ -81,7 +81,7 @@ def test_logprobs_none_from_model():
         "choices": [{"logprobs": None}]
     }
 
-    with patch("cusum_watch.calibration.generate.Llama", return_value=mock_llm):
+    with patch("llama_cpp.Llama", return_value=mock_llm):
         result = generate_calibration_set(
             model_path="dummy.gguf",
             prompts=["Test"],
