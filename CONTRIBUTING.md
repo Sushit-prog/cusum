@@ -1,58 +1,91 @@
 # Contributing to cusum-watch
 
-## Running Tests
+## Development Setup
 
 ```bash
-# Fast tests (~30s) — runs on every push/PR
+# Clone the repository
+git clone https://github.com/your-org/cusum-watch.git
+cd cusum-watch
+
+# Install in development mode
+pip install -e ".[dev]"
+
+# For calibration features (requires llama-cpp-python)
+pip install -e ".[calibration]"
+```
+
+## Running Tests
+
+### Fast Tests (CI runs these on every push)
+
+```bash
 pytest tests/ -v -m "not slow"
+```
 
-# Slow tests (weekly/manual) — calibration simulation-heavy
+These tests run in ~30 seconds and don't require a model file.
+
+### Slow Tests (weekly/manual)
+
+```bash
 pytest tests/ -v -m slow
+```
 
-# All tests
+These tests require the reference GGUF model and take several minutes.
+
+### All Tests
+
+```bash
 pytest tests/ -v
 ```
 
 ## CI Structure
 
-- **test-fast**: Runs on every push/PR. Python 3.10/3.11/3.12 matrix. Runs `pytest -m "not slow"`.
-- **test-slow**: Runs weekly (Monday 6am UTC) or on manual trigger. Runs `pytest -m slow`.
-- **smoke-test**: Runs on every push/PR. Fresh install + imports all key modules + CLI --help.
+GitHub Actions runs:
+1. **Fast tests** on every push and PR
+2. **Slow tests** weekly (or manually triggered)
+3. **Clean-install smoke test** to verify package installs correctly
+4. **API compatibility check** to detect breaking changes
 
-## API Compatibility
+## API Compatibility Checking
 
-After any intentional change to a public signature in INTERFACES.md:
+After making intentional API changes, update the baseline:
 
 ```bash
-python scripts/check_api_compat.py --update-baseline
-git add api_baseline.json
-git commit -m "Update API baseline: <reason>"
+python scripts/check_api_compat.py --update
 ```
 
-The CI smoke test and local `python scripts/check_api_compat.py` will catch accidental regressions.
+This updates `api_baseline.json` with the new API signatures. The CI will verify that future changes don't break backward compatibility.
 
 ## Fetching the Reference Model
 
-For model-dependent tests (integration tests):
+For calibration tests, download the reference GGUF model:
 
 ```bash
+pip install huggingface_hub  # if not installed
 python scripts/fetch_reference_model.py
 ```
 
-Downloads Qwen2.5-1.5B-Instruct Q4_K_M (~1.2 GB) into `models/` (gitignored).
+This downloads Qwen2.5-1.5B-Instruct Q4_K_M (~1.12 GB) to the `models/` directory.
 
-## Project Layout
+## Code Style
 
-```
-src/cusum_watch/
-  calibration/    M1: generate, M3: threshold, M5: (future)
-  observable/     M2: compute
-  stats/          M3: null_model, M4: cusum
-  proxy/          M6: litellm_hook
-  metrics/        M8: server
-  cli/            M10: main
-tests/            M1-M14 test files
-dashboards/       M9: Grafana JSON
-docs/             M8-M9: observability, deployment
-scripts/          M1: fetch model, M13: check_api_compat
-```
+- Follow existing patterns in the codebase
+- Keep functions focused and small
+- Use type hints consistently
+- Write docstrings for public APIs
+
+## Pull Request Process
+
+1. Create a feature branch from `main`
+2. Make your changes with tests
+3. Run the fast test suite: `pytest tests/ -v -m "not slow"`
+4. If you changed public APIs, run `python scripts/check_api_compat.py --update`
+5. Submit a PR with a clear description of changes
+
+## Reporting Issues
+
+Open an issue on GitHub with:
+- Clear description of the problem
+- Steps to reproduce
+- Expected vs actual behavior
+- Environment details (Python version, OS, etc.)

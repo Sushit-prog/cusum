@@ -16,8 +16,6 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from llama_cpp import Llama
-
 
 @dataclass
 class CalibrationSample:
@@ -53,6 +51,14 @@ def generate_calibration_set(
     """
     if not prompts:
         return []
+
+    try:
+        from llama_cpp import Llama
+    except ImportError:
+        raise ImportError(
+            "llama-cpp-python is required for calibration. "
+            "Install with: pip install cusum-watch[calibration]"
+        )
 
     llm = Llama(model_path=model_path, logits_all=True, n_ctx=2048, verbose=False)
 

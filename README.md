@@ -1,6 +1,6 @@
 # cusum-watch
 
-Decoding-time drift monitor for quantized LLMs. Teams running INT4/INT8 reasoning models in production need to catch generation failures (repetition collapse, degenerate looping) before they reach users. Raw token log-probability is the wrong monitoring signal for this — quantization shifts logprob magnitudes uniformly, making threshold-based monitors either too sensitive or too blind. cusum-watch instead monitors a **quantization-robust observable**: the shape of the top-k log-probability distribution (entropy ratio + margin ratio), which is invariant to the uniform additive shifts that quantization introduces. This observable feeds into a two-sided e-CUSUM detector that catches both entropy increases (incoherence) and entropy decreases (over-confident repetition).
+Decoding-time drift monitor for quantized LLMs. Teams running INT4/INT8 reasoning models in production need to catch generation failures (repetition collapse, degenerate looping) before they reach users. Raw token log-probability is the wrong monitoring signal for this - quantization shifts logprob magnitudes uniformly, making threshold-based monitors either too sensitive or too blind. cusum-watch instead monitors a **quantization-robust observable**: the shape of the top-k log-probability distribution (entropy ratio + margin ratio), which is invariant to the uniform additive shifts that quantization introduces. This observable feeds into a two-sided e-CUSUM detector that catches both entropy increases (incoherence) and entropy decreases (over-confident repetition).
 
 **Status**: Functional monitoring pipeline with calibrated thresholds, Prometheus metrics, Grafana dashboard, and CLI. Current limitation: logprob-only mode (no hidden-state backend available). Version 0.2.0.
 
@@ -64,15 +64,15 @@ python -m cusum_watch.metrics.server
 ## Architecture
 
 ```
-Token logprobs ? default_observable() ? StepObservable.combined
-                                          ?
-                                    fit_null() ? NullModel
-                                          ?
-                         calibrate_threshold() ? thresholds
-                                          ?
-                    ECusum (positive) + ECusum (negative) ? CusumAlert
-                                          ?
-                              MetricsRegistry ? /metrics (Prometheus)
+Token logprobs -> default_observable() -> StepObservable.combined
+                                              |
+                                     fit_null() -> NullModel
+                                              |
+                          calibrate_threshold() -> thresholds
+                                              |
+                     ECusum (positive) + ECusum (negative) -> CusumAlert
+                                              |
+                                MetricsRegistry -> /metrics (Prometheus)
 ```
 
 The two-sided CUSUM catches failure modes that shift `combined` in opposite directions: entropy spike (combined increases) and repetition collapse (combined decreases). Each direction is independently calibrated.
@@ -86,9 +86,9 @@ The two-sided CUSUM catches failure modes that shift `combined` in opposite dire
 
 ## Documentation
 
-- [Observability Guide](docs/observability.md) — metrics, dashboard, failure-mode taxonomy
-- [Deployment Guide](docs/DEPLOYMENT.md) — Prometheus/Grafana setup
-- [Changelog](CHANGELOG.md) — release history
+- [Observability Guide](docs/observability.md) - metrics, dashboard, failure-mode taxonomy
+- [Deployment Guide](docs/DEPLOYMENT.md) - Prometheus/Grafana setup
+- [Changelog](CHANGELOG.md) - release history
 
 ## Development
 

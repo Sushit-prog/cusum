@@ -21,7 +21,7 @@
 ### Known Limitations
 - Logprob-only monitoring (no hidden-state backend available).
 - i.i.d. bootstrap calibration underestimates positive-direction FAR on sequential data (2.6x divergence in M12).
-- In-memory metrics only — reset on proxy restart.
+- In-memory metrics only - reset on proxy restart.
 - alt_shift must be <= 0.02 (0.2x null std) for calibration to work; larger values break the threshold.
 
 ## 0.1.0 (initial)
@@ -29,7 +29,7 @@
 ### Added
 - Package scaffold with `calibration/`, `observable/`, `stats/`, `proxy/`, `metrics/`, `cli/` module layout.
 - `calibration/generate.py`: CPU-only INT4 GGUF calibration-set generator via llama-cpp-python.
-- `observable/compute.py`: quantization-robust observable (`StepObservable`) — entropy ratio + margin ratio, scale-invariant to uniform logprob shifts.
+- `observable/compute.py`: quantization-robust observable (`StepObservable`) - entropy ratio + margin ratio, scale-invariant to uniform logprob shifts.
 - `stats/null_model.py`: null-distribution fitting with KS-test candidate selection, `null_loglik_ratio`, `combined_values_from_calibration_set` helper.
 - `stats/cusum.py`: e-CUSUM engine with reset-at-zero recursion.
 - `calibration/threshold.py`: conformal-style threshold calibration with bootstrap simulation and held-out validation.
