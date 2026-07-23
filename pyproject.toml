@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cusum-watch"
+version = "0.1.0-dev"
+description = "Decoding-time drift monitor for quantized LLMs"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "llama-cpp-python>=0.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cusum_watch"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
