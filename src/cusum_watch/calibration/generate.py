@@ -31,6 +31,7 @@ def generate_calibration_set(
     prompts: list[str],
     k: int = 10,
     max_new_tokens: int = 256,
+    n_ctx: int = 512,
 ) -> list[CalibrationSample]:
     """Generate a calibration set by running each prompt through the model.
 
@@ -48,6 +49,10 @@ def generate_calibration_set(
         Number of top log-probabilities to record per token step.
     max_new_tokens:
         Maximum tokens to generate per prompt.
+    n_ctx:
+        Context window size. Default 512 is sufficient for typical
+        calibration prompts + max_new_tokens. Larger values increase
+        memory usage proportionally (n_ctx * vocab_size * 4 bytes).
     """
     if not prompts:
         return []
@@ -60,7 +65,7 @@ def generate_calibration_set(
             "Install with: pip install cusum-watch[calibration]"
         )
 
-    llm = Llama(model_path=model_path, logits_all=True, n_ctx=2048, verbose=False)
+    llm = Llama(model_path=model_path, logits_all=True, n_ctx=n_ctx, verbose=False)
 
     samples = []
     for prompt in prompts:
