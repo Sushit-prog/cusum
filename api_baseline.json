@@ -10,7 +10,7 @@
     ]
   },
   "cusum_watch.calibration.generate.generate_calibration_set": {
-    "signature": "def generate_calibration_set(model_path: 'str', prompts: 'list[str]', k: 'int' = 10, max_new_tokens: 'int' = 256) -> 'list[CalibrationSample]'",
+    "signature": "def generate_calibration_set(model_path: 'str', prompts: 'list[str]', k: 'int' = 10, max_new_tokens: 'int' = 256, n_ctx: 'int' = 512) -> 'list[CalibrationSample]'",
     "fields": []
   },
   "cusum_watch.calibration.generate.save_calibration_set": {

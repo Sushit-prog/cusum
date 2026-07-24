@@ -29,6 +29,7 @@ def generate_calibration_set(
     prompts: list[str],
     k: int = 10,
     max_new_tokens: int = 256,
+    n_ctx: int = 512,
 ) -> list[CalibrationSample]: ...
 
 def save_calibration_set(samples: list[CalibrationSample], path: str) -> None: ...
